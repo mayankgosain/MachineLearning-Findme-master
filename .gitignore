@@ -1,0 +1,13 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Service credentials
+creds.json
+
+.DS_Store
+weights/
+test.js

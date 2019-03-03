@@ -1,0 +1,58 @@
+service: findme
+
+provider:
+  name: openwhisk
+  runtime: nodejs:10
+
+package:
+  exclude:
+    - 'weights/**'
+
+functions:
+  search_status:
+    handler: search_status.main
+    name: "findme/search_status"
+    events:
+      - http:
+          method: GET
+          path: /api/search/{id}
+          resp: http
+    annotations:
+      final: true
+  schedule_search:
+    handler: schedule_search.main
+    name: "findme/schedule_search"
+    events:
+      - http: POST /api/search
+    annotations:
+      final: true
+  twitter_search:
+    handler: twitter_search.main
+    name: "findme/twitter_search"
+    events:
+      - trigger: search_request
+    annotations:
+      final: true
+  compare_images:
+    handler: compare_images.main
+    name: "findme/compare_images"
+    image: jamesthomas/action-nodejs-v10:tfjs-faceapi
+    memory: 512
+    events:
+      - trigger: tweet_image
+    annotations:
+      final: true
+
+custom: 
+  credentials: ${file(creds.json)}
+
+resources:
+  packages:
+    findme:
+      parameters:
+        redis: ${self:custom.credentials.redis}
+        auth0: ${self:custom.credentials.auth0}
+        twitter_client: ${self:custom.credentials.twitter}
+
+plugins:
+  - serverless-openwhisk
